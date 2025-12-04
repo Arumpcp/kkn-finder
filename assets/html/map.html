@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Firebase a Leaflet Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+
+    <!-- Add the Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFEsdbwFIdIsEmah1WnreZdVOfwrYIR1k",
+            authDomain: "reactnatice-2025.firebaseapp.com",
+            databaseURL: "https://reactnatice-2025-default-rtdb.firebaseio.com",
+            projectId: "reactnatice-2025",
+            storageBucket: "reactnatice-2025.firebasestorage.app",
+            messagingSenderId: "406629352921",
+            appId: "1:406629352921:web:5ba228b5b92b16446305c8"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Initialize the map - ZOOM OUT untuk seluruh Indonesia
+        // Center Indonesia: -2.5489, 118.0149
+        // Zoom 5 = Seluruh Indonesia (Papua ke Aceh)
+        const map = L.map('map').setView([-2.5489, 118.0149], 5);
+
+        // Add a tile layer (the map background)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 5,  // Batasi zoom minimum
+            maxZoom: 19  // Zoom maximum untuk detail
+        }).addTo(map);
+
+        // Get a reference to the database service
+        const pointsRef = database.ref("/points");
+
+        // Store markers untuk auto-fit bounds
+        let allMarkers = [];
+
+        // Attach an asynchronous callback to read the data at our posts reference
+        pointsRef.on('value', (e) => {
+            const data = e.val();
+            console.log(data);
+            
+            // Clear existing markers
+            allMarkers.forEach(marker => map.removeLayer(marker));
+            allMarkers = [];
+            
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    const point = data[key];
+                    if (point.coordinates) {
+                        // Change coordinates to float
+                        point.coordinates = point.coordinates.split(",").map(parseFloat);
+                        console.log(point.coordinates);
+                        
+                        const marker = L.marker(point.coordinates).addTo(map);
+                        allMarkers.push(marker);
+                        
+                        const popup = `<strong>${point.name}</strong><br>
+                                      ${point.coordinates.join(', ')}
+                                      ${point.accuration ? '<br>Akurasi: ' + point.accuration + 'm' : ''}
+                                      <br><br>
+                                      <button onclick="deletePoint('${key}')" style="background:#DC2626; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:6px;">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 448 512" fill="currentColor">
+                                              <path d="M135.2 17.7C140.6 7.1 151.8 0 164 0h120c12.2 0 23.4 7.1 28.8 17.7L324 32h81c13.3 0 24 10.7 24 24v16c0 6.6-5.4 12-12 12H31c-6.6 0-12-5.4-12-12V56c0-13.3 10.7-24 24-24h81l18.2-14.3zM53.2 467c7.5 28.4 32.4 45 60.5 45h220.6c28.1 0 53-16.6 60.5-45L416 128H32l21.2 339z"/>
+                                          </svg>
+                                          Hapus
+                                      </button>`;
+                        
+                        if (point.name) {
+                            marker.bindPopup(popup);
+                        }
+                    }
+                });
+                
+                // Auto-fit map ke semua markers (opsional)
+                if (allMarkers.length > 0) {
+                    const group = L.featureGroup(allMarkers);
+                    map.fitBounds(group.getBounds().pad(0.1)); // 0.1 = 10% padding
+                }
+            }
+        }, (errorObject) => {
+            console.log("The read failed: " + errorObject.name);
+        });
+
+        // Delete point
+        function deletePoint(key) {
+            // confirm
+            if (confirm("Yakin akan menghapus point ini?")) {
+                pointsRef.child(key).remove();
+                // reload page
+                window.location.reload();
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
