@@ -96,38 +96,31 @@ Data bookmark disimpan di:
 AsyncStorage (local storage perangkat)
 ```
 
----
+## 📸 Tangkapan Layar Aplikasi
+
 ### 1. Halaman Home
-```
 ![Home Page](assets/screenshots/home.jpg)
-```
 
 ---
 
-### 2. Halaman Peta Lokasi
-
-```
-![Map Page](assets/screenshots/mapnative.)
-![Map Page](assets/screenshots/mapweb.jpg)
-```
+### 2. Halaman Peta Lokasi - Native
+![Map Native](assets/screenshots/mapnative.jpg)
 
 ---
 
-### 3. Halaman List Lokasi
+### 3. Halaman Peta Lokasi - Web
+![Map Web](assets/screenshots/mapweb.jpg)
 
-```
+---
+
+### 4. Halaman List Lokasi
 ![List Page](assets/screenshots/listlocation.jpg)
-```
 
 ---
 
-### 4. Halaman Bookmark
-
-```
+### 5. Halaman Bookmark
 ![Bookmark Page](assets/screenshots/bookmark.jpg)
-```
 
----
 
 ## ▶️ Cara Menjalankan Aplikasi
 
